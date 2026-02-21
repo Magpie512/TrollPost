@@ -1,0 +1,240 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+:root {
+    --header-bg: #d6c568;
+    /* Light gold */
+    --header-border: #c4a915;
+    /* Dark gold */
+    --container-bg: #ebdeb4;
+    /* Parchment */
+    --headings: #423613;
+    /* Dark brown */
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.layout {
+    width: 100%;
+    min-height: 100vh;
+    display: grid;
+    grid:
+        "header header header" auto "leftSide body rightSide" 1fr "leftSide body rightSideAlt" auto "footer footer footer" auto / auto 1fr 250px;
+    gap: 8px;
+}
+
+.header {
+    grid-area: header;
+}
+
+.leftSide {
+    grid-area: leftSide;
+}
+
+.body {
+    grid-area: body;
+}
+
+.rightSide {
+    grid-area: rightSide;
+}
+
+.rightSideAlt {
+    grid-area: rightSideAlt;
+}
+
+.footer {
+    grid-area: footer;
+}
+
+#FeedContainer {
+    grid-area: body;
+}
+
+#TrendingContainer {
+    grid-area: rightSide;
+}
+
+#AdvertContainer {
+    grid-area: rightSideAlt;
+}
+
+/* Funky Effects */
+.embossed {
+    text-shadow:
+        1px 1px 2px #2c2727,
+        /* highlight (top-left) */
+        -1px -1px 2px #908585;
+    /* shadows (bottom-right) */
+}
+
+#HOTWContainer, #CreatePostsContainer, #FeedContainer, #TrendingContainer, #AdvertContainer {
+    background-color: var(--container-bg);
+    border: 2px solid var(--header-border);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 20px;
+}
+
+/* Header */
+header {
+    background-color: var(--header-bg);
+    border-bottom: 4px ridge var(--header-border);
+    font-family: 'Cinzel', serif;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 60px;
+    margin: 10px;
+    vertical-align: middle;
+}
+
+header>h1 {
+    padding-top: 15px;
+    display: inline-block;
+    color: var(--headings);
+    font-size: 3rem;
+    vertical-align: middle;
+}
+
+header>#signin,
+header>#signup {
+    margin-right: 10px;
+}
+
+header>#signin:hover,
+header>#signup:hover {
+    background-color: var(--header-border);
+    border-color: var(--header-bg);
+    color: var(--headings);
+}
+
+header>#searchBar {
+    width: 300px;
+    margin-right: 10px;
+    margin-left: auto;
+}
+
+/* Body */
+body ::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../img/map.png');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px);
+    z-index: -1;
+    /* Ensure it stays behind all content */
+}
+
+/* Hero of the week */
+
+#HOTWContainer h2 {
+    color: var(--headings);
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    text-align: center;
+}
+
+/* Posts */
+
+#CreatePostsContainer label {
+    color: var(--headings);
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    text-align: center;
+}
+
+#CreatePostsContainer input,
+#CreatePostsContainer textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid var(--header-border);
+    border-radius: 4px;
+}
+
+#CreatePostsContainer textarea {
+    resize: none;
+}
+
+/* Trending */
+
+#TrendingContainer h3 {
+    color: var(--headings);
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    text-align: center;
+}
+
+#TrendingContainer article {
+    background-color: var(--header-bg);
+    border: 1px solid var(--header-border);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Advert */
+
+#AdvertContainer {
+    font-size: 10px;
+}
+
+#AdvertContainer h3 {
+    color: var(--headings);
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    text-align: center;
+}   
+
+#AdvertContainer .advert-logo {
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 10px auto;
+    border: 2px ridge var(--header-border);
+    border-radius: 5px;
+}
+
+#AdvertContainer .tagline {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 10px 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Footer */
+footer {
+    background-color: var(--header-bg);
+    border-top: 4px ridge var(--header-border);
+    text-align: center;
+    padding: 10px 0;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+footer p:nth-child(3) {
+    font-size: 70%;
+}
