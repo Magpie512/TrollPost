@@ -1,0 +1,10 @@
+2026-03-28
+sometime at like 9:55pm -Just restarting the DB. I think its corrupt.
+10:00 holy noise complaint dude
+10:28pm - Site loads now
+10:31pm - oh right process needs fixing
+
+2026-03-29
+12:11pm - oh right i got sessions incorporated with w3s help
+so,, now you cant post without an account. the notif is a bit
+explicit but the assignment is for functionality
