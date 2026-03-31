@@ -13,3 +13,5 @@ explicit but the assignment is for functionality
 2026-03-30
 8:22pm - Jesus christ I hate CSS right now holy moly and undoing the fixes alex's brother tried to do. BROWN ISNT EVEN RUNESCAPE DUDE???
 Im onto fixing the sign in and login appearance and then i'll quickly finish the sql php thing session keys later
+
+8:39 okay im done with the css im just gonna do my job now jesus christ
