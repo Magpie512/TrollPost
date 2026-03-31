@@ -1,5 +1,5 @@
 <!-- I do wanna state I did get this template from freefrontend.com and will be modifying it to fit the theme of the site, but I will give credit where credit is due -->
-<?php require_once 'includes/header.php'; ?>
+<?php require '../includes/header.php'; ?>
 <main>
 
 	<body>

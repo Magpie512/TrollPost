@@ -8,3 +8,8 @@ sometime at like 9:55pm -Just restarting the DB. I think its corrupt.
 12:11pm - oh right i got sessions incorporated with w3s help
 so,, now you cant post without an account. the notif is a bit
 explicit but the assignment is for functionality
+
+
+2026-03-30
+8:22pm - Jesus christ I hate CSS right now holy moly and undoing the fixes alex's brother tried to do. BROWN ISNT EVEN RUNESCAPE DUDE???
+Im onto fixing the sign in and login appearance and then i'll quickly finish the sql php thing session keys later
