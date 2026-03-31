@@ -15,3 +15,11 @@ explicit but the assignment is for functionality
 Im onto fixing the sign in and login appearance and then i'll quickly finish the sql php thing session keys later
 
 8:39 okay im done with the css im just gonna do my job now jesus christ
+
+10:08pm hey so i may have overdone the sql. Im passionate :/
+
+10:48pm wrote out the doc supporting sql methods because I know i will be lost in the morning
+
+10:51pm im gonna make a diagram
+
+10:54pm hey so one of my tables loops into itself. uh. uhoh? i hope its not an uhoh.
