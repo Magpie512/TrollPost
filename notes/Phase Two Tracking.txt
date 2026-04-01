@@ -23,3 +23,6 @@ Im onto fixing the sign in and login appearance and then i'll quickly finish the
 10:51pm im gonna make a diagram
 
 10:54pm hey so one of my tables loops into itself. uh. uhoh? i hope its not an uhoh.
+
+2026-04-01
+8:16am - Im overwhelmed so im keeping it minimum. undoing my cool sql tables.
