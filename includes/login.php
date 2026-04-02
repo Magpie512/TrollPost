@@ -22,13 +22,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Thanks Ben blanc for this help
+        // set admin session
+        if ($user && $user['isadmin'] == 1) {
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['isadmin'] = $user['isadmin'];
+            header("Location: admin.php");
+            exit;
+        }
+
         if ($user && password_verify($password, $user['password'])) {
             session_regenerate_id(true);
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
 
-            header("Location: orders.php");
+            header("Location: index.php");
             exit;
         } else {
             $error = "Invalid credentials. Please try again.";
