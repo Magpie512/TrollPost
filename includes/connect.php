@@ -1,6 +1,6 @@
 <?php 
 // $host = "localhost"; //hostname
-$host = "127.0.0.1"; //hostname 
+$host = "127.0.0.1"; 
 $db = "trollpost"; //database name
 $user = "root"; //username
 $password = ""; //password

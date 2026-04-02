@@ -166,6 +166,7 @@ header #searchBar::placeholder {
 /* RS-style buttons */
 header #signin,
 header #signup,
+.fancy-button,
 #CreatePostsContainer input[type="submit"],
 .btn-interaction,
 button {

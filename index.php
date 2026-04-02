@@ -18,11 +18,10 @@ require_once 'includes/header.php';
                 <span style="color:#ffcc44; font-size:11px; white-space:nowrap;">
                     Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!
                 </span>
-                <button class="btn btn-secondary" onclick="window.location.href='pages/profile.php'">My Profile</button>
-                <button class="btn btn-secondary" onclick="window.location.href='includes/logout.php'">Log Out</button>
+                <button class="fancy-button" onclick="window.location.href='pages/profile.php'">My Profile</button>
+                <button class="fancy-button" onclick="window.location.href='includes/logout.php'">Log Out</button>
             <?php else: ?>
-                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Sign In</button>
-                <button id="signup" class="btn btn-secondary" onclick="window.location.href='pages/SL.php'">Sign Up</button>
+                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign up</button>
             <?php endif; ?>
         </header>
 

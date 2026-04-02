@@ -78,3 +78,7 @@ i also need to make it so the feed posts display the username too huh.
 tomorrow. tomorrow.
 
 feed post doesnt work either. fix that too future me.
+
+
+2026-04-02
+I have a fucking logic issue somewhere that corrupts my data folder. Its been cursing me in every project man

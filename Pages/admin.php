@@ -3,7 +3,7 @@ session_start();
 require '../includes/connect.php';
 
 // Must be logged in AND be an admin
-if (!isset($_SESSION['user_id']) || $_SESSION['isadmin'] != 1) {
+if ($_SESSION['isadmin'] != 1) {
     header("Location: ../index.php");
     exit;
 }
