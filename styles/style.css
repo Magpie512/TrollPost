@@ -229,6 +229,16 @@ button:active {
     min-width: 0;
 }
 
+.PostCard img {
+    max-width: 100%;
+    max-height: 100px;
+    width: auto;
+    object-fit: cover;
+    margin-top: 6px;
+    border: 2px solid #c4a070;
+    display: block;
+}
+
 .PostCard:nth-child(even) {
     background: var(--post-stripe);
 }

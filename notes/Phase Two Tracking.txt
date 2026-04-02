@@ -26,3 +26,55 @@ Im onto fixing the sign in and login appearance and then i'll quickly finish the
 
 2026-04-01
 8:16am - Im overwhelmed so im keeping it minimum. undoing my cool sql tables.
+
+2026-04-01
+9:05pm - Implementing the captcha after the thickest nap of my life
+
+9:45 - I forgot what I was going to write but i wanna have it on record I dont care my secretkey will be out
+
+10:13 - no wait ik what it is. im takijhg more time writing this taskill.bat script to free mysql
+
+-----------------------------------------------------------------------------------------
+:: Check for admin rights
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Requesting administrative privileges...
+    powershell -Command "Start-Process '%~f0' -Verb runAs"
+    exit /b
+)
+
+:: Your actual commands below
+taskkill.exe /F /FI "status eq NOT RESPONDING"
+
+:: Kill specific PID 6664
+taskkill.exe /F /PID 6664
+
+:: Kill specific PID 6436
+taskkill.exe /F /PID 6436
+
+:: Kill specific PID 6620
+taskkill.exe /F /PID 6620
+
+@echo off
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :3306') do (
+    echo Killing PID %%a on port 3306...
+    taskkill /F /PID %%a
+)
+
+jesus christ
+---------------------------------------------
+
+10:18 pm captcha fixing I am not a robot swap
+
+ARE YOU KIDDING ME IT DOEST SUPPORT LOCAL HOST\
+commenting it out til later cuz wtf
+
+
+10:24 image too big gotta fix it
+
+10:40 as always implementing a back button is a pain in the butt. I think im gonna call it and finalize the admin side tomorrow. Id rather have some fun with scotts final. not to say this isnt fun but im getting fatigued
+
+i also need to make it so the feed posts display the username too huh.
+tomorrow. tomorrow.
+
+feed post doesnt work either. fix that too future me.

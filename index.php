@@ -1,6 +1,7 @@
 <?php
+session_start();
 require 'includes/connect.php';
-require_once 'includes/header.php'; 
+require_once 'includes/header.php';
 ?>
 
 <body>
@@ -12,23 +13,37 @@ require_once 'includes/header.php';
             <h1 class="embossed"> TrollPost </h1>
 
             <input type="text" id="searchBar" placeholder="Scry?" class="form-control">
-            <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'"> Sign In </button>
-            <button id="signup" class="btn btn-secondary" onclick="window.location.href='pages/SL.php'"> Sign Up </button>
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <span style="color:#ffcc44; font-size:11px; white-space:nowrap;">
+                    Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!
+                </span>
+                <button class="btn btn-secondary" onclick="window.location.href='pages/profile.php'">My Profile</button>
+                <button class="btn btn-secondary" onclick="window.location.href='includes/logout.php'">Log Out</button>
+            <?php else: ?>
+                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Sign In</button>
+                <button id="signup" class="btn btn-secondary" onclick="window.location.href='pages/SL.php'">Sign Up</button>
+            <?php endif; ?>
         </header>
 
         <?php include 'includes/herooftheweek.php'; ?>
 
         <section class="body">
             <div id="CreatePostsContainer">
-                <?php if (isset($_SESSION['user_id'])): // Only show post form if logged in ?>
-                    <form action="process.php" method="post" id="PostForm">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <form action="process.php" method="post" id="PostForm" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="create">
-                        <label for="PostContent"> Your Post: </label>
+                        <label for="PostContent">Your Post:</label>
                         <textarea id="PostContent" name="content" rows="4" cols="50" maxlength="500"
                             placeholder="Write your troll post here..."></textarea>
-                        <input type="submit" value="Submit Post">
+                        <div style="margin-top:6px;">
+                            <label for="post_image" style="font-size:11px;">Attach Image (optional):</label>
+                            <input type="file" name="post_image" id="post_image" accept="image/*"
+                                style="font-size:11px; margin-top:4px;">
+                        </div>
+                        <input type="submit" value="Submit Post" style="margin-top:8px;">
                     </form>
-                <?php else: // Show login prompt if not logged in ?>
+                <?php else: ?>
                     <p>You must be <a href="pages/SL.php">logged in</a> to post.</p>
                 <?php endif; ?>
             </div>
@@ -37,7 +52,7 @@ require_once 'includes/header.php';
                 <h2>Recent Posts</h2>
                 <?php
                 $limit = 10;
-                $stmt = $pdo->prepare("SELECT id, content, created_at FROM posts ORDER BY id DESC LIMIT :limit");
+                $stmt = $pdo->prepare("SELECT id, user_id, content, image_path, created_at FROM posts ORDER BY id DESC LIMIT :limit");
                 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
                 $stmt->execute();
                 while ($post = $stmt->fetch()):
@@ -49,15 +64,20 @@ require_once 'includes/header.php';
 
                         <div id="display-<?php echo $post['id']; ?>">
                             <p class="content-text"><?php echo htmlspecialchars($post['content']); ?></p>
+                            <?php if (!empty($post['image_path'])): ?>
+                                <img src="<?php echo htmlspecialchars($post['image_path']); ?>" alt="Post image"
+                                    style="max-width:100%; margin-top:6px; border:2px solid #c4a070; display:block;">
+                            <?php endif; ?>
                         </div>
 
                         <div class="post-footer">
-                            <?php if (isset($_SESSION['user_id'])): // Only show edit/delete if logged in ?>
+                            <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $post['user_id']): ?>
                                 <button class="btn-interaction" onclick="toggleEdit(<?php echo $post['id']; ?>)">Edit</button>
                                 <form action="process.php" method="POST" style="display:inline;">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?php echo $post['id']; ?>">
-                                    <button type="submit" class="btn-interaction">Delete</button>
+                                    <button type="submit" class="btn-interaction"
+                                        onclick="return confirm('Delete this post?')">Delete</button>
                                 </form>
                             <?php endif; ?>
                         </div>
