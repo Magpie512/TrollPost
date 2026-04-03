@@ -7,7 +7,7 @@ header("Expires: 0");
 
 // Not logged in -  send to login page
 if (empty($_SESSION["user_id"])) {
-    header("Location: SL.php");
+    header("Location: pages/SL.php");
     exit();
 }
 

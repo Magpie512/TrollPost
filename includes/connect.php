@@ -1,4 +1,8 @@
 <?php 
+if(session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // $host = "localhost"; //hostname
 $host = "127.0.0.1"; 
 $db = "trollpost"; //database name
