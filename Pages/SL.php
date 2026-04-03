@@ -1,5 +1,4 @@
 <?php
-session_start();
 require '../includes/connect.php';
 
 // ------------------
@@ -8,11 +7,31 @@ require '../includes/connect.php';
 define('RECAPTCHA_SITE_KEY', '6LfbZaIsAAAAADHxOSXfPgr8o5l9a3EplZi__70g');
 define('RECAPTCHA_SECRET_KEY', '6LfbZaIsAAAAAKuSJYXq2rK5cwXCcICCpqTxPLnj');
 
+// function verifyCaptcha(): bool
+// {
+//     $token = $_POST['g-recaptcha-response'] ?? '';
+//     if (empty($token))
+//         return true; // switched from false
+
+//     $response = file_get_contents(
+//         'https://www.google.com/recaptcha/api/siteverify?secret='
+//         . RECAPTCHA_SECRET_KEY . '&response=' . urlencode($token)
+//     );
+//     $data = json_decode($response, true);
+//     return $data['success'] ?? false;
+// }
+
+
 function verifyCaptcha(): bool
 {
+    // Bypass reCAPTCHA on localhost for development
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if ($host === 'localhost' || $host === '127.0.0.1') {
+        return true;
+    }
+
     $token = $_POST['g-recaptcha-response'] ?? '';
-    if (empty($token))
-        return true; // switched from false
+    if (empty($token)) return false;
 
     $response = file_get_contents(
         'https://www.google.com/recaptcha/api/siteverify?secret='
@@ -21,6 +40,7 @@ function verifyCaptcha(): bool
     $data = json_decode($response, true);
     return $data['success'] ?? false;
 }
+
 
 $loginError = "";
 $registerError = "";
@@ -50,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $_SESSION['isadmin'] = $user['isadmin'];
 
                 if ($user['isadmin'] == 1) {
-                    header("Location: ../pages/admin.php");
+                    header("Location: admin.php");
                 } else {
                     header("Location: ../index.php");
                 }

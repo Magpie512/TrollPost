@@ -103,19 +103,19 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
     <link rel="icon" type="image/png" href="../img/gob.png">
     <style>
         :root {
-            --bg: #0d0a06;
-            --panel: #1a1208;
-            --panel2: #221a0c;
-            --border: #4a3510;
-            --gold: #c8942a;
-            --gold-lt: #e8b84a;
-            --gold-dim: #7a5a18;
-            --red: #8b1a1a;
-            --red-lt: #c43030;
-            --text: #e8d9b8;
-            --text-dim: #9a8860;
-            --green: #2a6b2a;
-            --green-lt: #4a9b4a;
+            --bg: #8a744e;
+            --panel: #3a2c18;
+            --panel2: #46351c;
+            --border: #8a5e20;
+            --gold: #e2b45a;
+            --gold-lt: #f6d47a;
+            --gold-dim: #b08432;
+            --red: #b83a3a;
+            --red-lt: #e05a5a;
+            --text: #f6edd8;
+            --text-dim: #c8b890;
+            --green: #4c8f4c;
+            --green-lt: #78c878;
         }
 
         *,

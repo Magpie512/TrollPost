@@ -21,7 +21,8 @@ require_once 'includes/header.php';
                 <button class="fancy-button" onclick="window.location.href='pages/profile.php'">My Profile</button>
                 <button class="fancy-button" onclick="window.location.href='includes/logout.php'">Log Out</button>
             <?php else: ?>
-                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign up</button>
+                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign
+                    up</button>
             <?php endif; ?>
         </header>
 
@@ -51,16 +52,22 @@ require_once 'includes/header.php';
                 <h2>Recent Posts</h2>
                 <?php
                 $limit = 10;
-                $stmt = $pdo->prepare("SELECT id, user_id, content, image_path, created_at FROM posts ORDER BY id DESC LIMIT :limit");
+                $stmt = $pdo->prepare("SELECT posts.id, posts.user_id, posts.content, posts.image_path, posts.created_at, users.username 
+                        FROM posts 
+                        JOIN users ON posts.user_id = users.id 
+                        ORDER BY posts.id DESC LIMIT :limit");
                 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
                 $stmt->execute();
                 while ($post = $stmt->fetch()):
                     ?>
                     <div class="PostCard" id="post-<?php echo $post['id']; ?>">
                         <div class="post-header">
-                            <span class="post-meta"><?php echo $post['created_at']; ?></span>
+                            <span class="post-meta">
+                                Posted by <strong><?php echo htmlspecialchars($post['username']); ?></strong>
+                                · <?php echo $post['created_at']; ?>
+                            </span>
                         </div>
-
+                    
                         <div id="display-<?php echo $post['id']; ?>">
                             <p class="content-text"><?php echo htmlspecialchars($post['content']); ?></p>
                             <?php if (!empty($post['image_path'])): ?>
