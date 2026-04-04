@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'create' && !empty($content)) {
             $imagePath = handleImageUpload();
             
-            // Note: Added 'name' to match your SQL schema (NOT NULL)
             $stmt = $pdo->prepare("INSERT INTO posts (user_id, name, content, image_path) VALUES (?, ?, ?, ?)");
             $stmt->execute([$_SESSION['user_id'], 'New Post', $content, $imagePath]);
         }

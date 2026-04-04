@@ -4,23 +4,8 @@ require '../includes/connect.php';
 // ------------------
 // RECAPTCHA CONFIG | I know im posting open secrets. idgaf
 // ------------------
-define('RECAPTCHA_SITE_KEY', '6LfbZaIsAAAAADHxOSXfPgr8o5l9a3EplZi__70g');
-define('RECAPTCHA_SECRET_KEY', '6LfbZaIsAAAAAKuSJYXq2rK5cwXCcICCpqTxPLnj');
-
-// function verifyCaptcha(): bool
-// {
-//     $token = $_POST['g-recaptcha-response'] ?? '';
-//     if (empty($token))
-//         return true; // switched from false
-
-//     $response = file_get_contents(
-//         'https://www.google.com/recaptcha/api/siteverify?secret='
-//         . RECAPTCHA_SECRET_KEY . '&response=' . urlencode($token)
-//     );
-//     $data = json_decode($response, true);
-//     return $data['success'] ?? false;
-// }
-
+define('RECAPTCHA_SITE_KEY', '6LfvrqYsAAAAAJRx9QbNuO9ki591owa55L5n5e_S');
+define('RECAPTCHA_SECRET_KEY', '6LfvrqYsAAAAACjCCDaFI_5limu6KRxlQRK609JE');
 
 function verifyCaptcha(): bool
 {
@@ -31,7 +16,8 @@ function verifyCaptcha(): bool
     }
 
     $token = $_POST['g-recaptcha-response'] ?? '';
-    if (empty($token)) return false;
+    if (empty($token))
+        return false;
 
     $response = file_get_contents(
         'https://www.google.com/recaptcha/api/siteverify?secret='
@@ -69,11 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['isadmin'] = $user['isadmin'];
 
-                if ($user['isadmin'] == 1) {
-                    header("Location: admin.php");
-                } else {
-                    header("Location: ../index.php");
-                }
+                header("Location: ../index.php");
+
                 exit;
             } else {
                 $loginError = "Invalid credentials. Please try again.";
@@ -108,7 +91,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
                 $stmt->execute([$username, $email, $hashed]);
-                $registerSuccess = "Account created! You can now sign in.";
+
+                // Auto login the new user and redirect to feed
+                $stmt = $pdo->prepare("SELECT id, username, isadmin FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                $newUser = $stmt->fetch(PDO::FETCH_ASSOC);
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $newUser['id'];
+                $_SESSION['username'] = $newUser['username'];
+                $_SESSION['isadmin'] = $newUser['isadmin'];
+                header("Location: /~Mars200561234/TrollPost/index.php");
+                exit;
             }
         }
     }
