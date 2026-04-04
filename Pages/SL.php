@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt->bindParam(':login', $usernameOrEmail);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
+             // Check if the user exists
             if ($user && password_verify($password, $user['password'])) {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['id'];
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $_SESSION['user_id']  = $newUser['id'];
                 $_SESSION['username'] = $newUser['username'];
                 $_SESSION['isadmin']  = $newUser['isadmin'];
-                header("Location: /~Mars200561234/TrollPost/index.php");
+                header("Location: ../index.php");
                 exit;
             }
         }
