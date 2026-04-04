@@ -1,3 +1,27 @@
+// === Search / Scry ==========
+const searchBar = document.getElementById('searchBar');
+if (searchBar) {
+    searchBar.addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        const cards = document.querySelectorAll('.PostCard');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const content = card.querySelector('.content-text')?.textContent.toLowerCase() ?? '';
+            const author  = card.querySelector('.post-author')?.textContent.toLowerCase() ?? '';
+            const matches = query === '' || content.includes(query) || author.includes(query);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        const noResults = document.getElementById('noResults');
+        if (noResults) {
+            noResults.style.display = (query !== '' && visibleCount === 0) ? 'block' : 'none';
+        }
+    });
+}
+
+// == Edit post inline =========
 function toggleEdit(id) {
     const container = document.getElementById('display-' + id);
     if (!container) {
@@ -18,6 +42,7 @@ function toggleEdit(id) {
     `;
 }
 
+// == Image preview ==============
 function showPreview(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
@@ -42,9 +67,10 @@ function clearFile() {
     t.textContent = 'IMG';
 }
 
+// ==== SL.php sign-in / sign-up panel toggle ============
 const signUpButton = document.getElementById('signUp');
 const signInButton = document.getElementById('signIn');
-const container = document.getElementById('container');
+const container    = document.getElementById('container');
 
 if (signUpButton && signInButton && container) {
     signUpButton.addEventListener('click', () => {

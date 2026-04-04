@@ -1,17 +1,16 @@
 <?php
 session_start();
 require '../includes/connect.php';
+require '../includes/sanitize.php';
 
 // Must be logged in AND be an admin
 if ($_SESSION['isadmin'] != 1) {
-    header("Location: ../index.php");
+    header("Location: /~Mars200561234/TrollPost/index.php");
     exit;
 }
 
 $success = "";
 $error = "";
-
-// POST handler
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -20,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete_post') {
         $postId = (int) ($_POST['post_id'] ?? 0);
         if ($postId > 0) {
-            // Remove image file if exists
             $stmt = $pdo->prepare("SELECT image_path FROM posts WHERE id = ?");
             $stmt->execute([$postId]);
             $post = $stmt->fetch();
@@ -33,10 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Delete a user (cascades to their posts via FK (foreign key))
+    // Delete a user (cascades to their posts via FK)
     if ($action === 'delete_user') {
         $targetId = (int) ($_POST['user_id'] ?? 0);
-        // Prevent admin from deleting themselves
         if ($targetId > 0 && $targetId !== (int) $_SESSION['user_id']) {
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$targetId]);
@@ -46,15 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Redirect to avoid form resubmission, preserve search query if any
     $qs = isset($_POST['search']) ? '?search=' . urlencode($_POST['search']) : '';
-    header("Location: admin.php" . $qs);
+    header("Location: pages/admin.php" . $qs);
     exit;
 }
 
-// Search / Load users functionality
-
-$search = trim($_GET['search'] ?? '');
+$search     = sanitizeSearch($_GET['search'] ?? '');
 $viewUserId = isset($_GET['user']) ? (int) $_GET['user'] : null;
 
 if ($search !== '') {
@@ -69,8 +63,7 @@ if ($search !== '') {
 }
 $users = $stmt->fetchAll();
 
-// Load posts for a specific user 
-$viewedUser = null;
+$viewedUser  = null;
 $viewedPosts = [];
 
 if ($viewUserId) {
@@ -85,7 +78,6 @@ if ($viewUserId) {
     }
 }
 
-// Stats 
 $totalUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
 ?>
@@ -97,9 +89,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrollPost – Admin Panel</title>
     <link rel="stylesheet" href="../styles/Normalize.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../img/gob.png">
     <style>
         :root {
@@ -118,476 +108,92 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
             --green-lt: #78c878;
         }
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Crimson Text', Georgia, serif; font-size: 15px; min-height: 100vh; }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Crimson Text', Georgia, serif;
-            font-size: 15px;
-            min-height: 100vh;
-        }
+        .topbar { background: linear-gradient(to bottom, #2a1e08, #0d0a06); border-bottom: 2px solid var(--gold-dim); padding: 12px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+        .topbar img { height: 36px; image-rendering: pixelated; }
+        .topbar h1 { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--gold-lt); letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 12px rgba(200,148,42,0.4); flex: 1; }
+        .topbar-links { display: flex; gap: 10px; }
+        .topbar-links a { color: var(--text-dim); text-decoration: none; font-size: 12px; font-family: 'Cinzel', serif; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--border); transition: all 0.2s; }
+        .topbar-links a:hover { color: var(--gold-lt); border-color: var(--gold-dim); }
 
-        /* headbar */
-        .topbar {
-            background: linear-gradient(to bottom, #2a1e08, #0d0a06);
-            border-bottom: 2px solid var(--gold-dim);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+        .wrap { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 62px); }
 
-        .topbar img {
-            height: 36px;
-            image-rendering: pixelated;
-        }
+        .sidebar { background: var(--panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+        .stat-box { padding: 16px 12px; text-align: center; border-right: 1px solid var(--border); }
+        .stat-box:last-child { border-right: none; }
+        .stat-num { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--gold-lt); line-height: 1; }
+        .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
 
-        .topbar h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            color: var(--gold-lt);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            text-shadow: 0 0 12px rgba(200, 148, 42, 0.4);
-            flex: 1;
-        }
+        .search-wrap { padding: 14px 12px; border-bottom: 1px solid var(--border); }
+        .search-wrap form { display: flex; gap: 6px; }
+        .search-wrap input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: 'Crimson Text', serif; font-size: 14px; padding: 6px 10px; outline: none; transition: border-color 0.2s; }
+        .search-wrap input:focus { border-color: var(--gold-dim); }
+        .search-wrap input::placeholder { color: var(--text-dim); font-style: italic; }
+        .btn-search { background: linear-gradient(to bottom, var(--gold), var(--gold-dim)); border: none; color: #1a0e00; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; padding: 6px 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: opacity 0.2s; }
+        .btn-search:hover { opacity: 0.85; }
 
-        .topbar-links {
-            display: flex;
-            gap: 10px;
-        }
+        .sidebar-title { padding: 10px 12px 6px; font-family: 'Cinzel', serif; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+        .user-list { overflow-y: auto; flex: 1; }
+        .user-row { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--border); cursor: pointer; text-decoration: none; color: var(--text); transition: background 0.15s; position: relative; }
+        .user-row:hover { background: var(--panel2); }
+        .user-row.active { background: var(--panel2); border-left: 3px solid var(--gold); }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-dim), var(--border)); display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold-lt); flex-shrink: 0; border: 1px solid var(--border); }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold-lt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-email { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge-admin { font-size: 9px; font-family: 'Cinzel', serif; background: var(--gold-dim); color: #1a0e00; padding: 1px 5px; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
 
-        .topbar-links a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 12px;
-            font-family: 'Cinzel', serif;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
+        .main { background: var(--bg); padding: 24px; overflow-y: auto; }
+        .alert { padding: 10px 14px; margin-bottom: 18px; font-size: 13px; border-left: 4px solid; }
+        .alert-success { background: #0d200d; border-color: var(--green-lt); color: #7fcf7f; }
+        .alert-error { background: #200d0d; border-color: var(--red-lt); color: #cf7f7f; }
 
-        .topbar-links a:hover {
-            color: var(--gold-lt);
-            border-color: var(--gold-dim);
-        }
+        .welcome { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+        .welcome h2 { font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--gold-dim); margin-bottom: 10px; }
 
-        /* layout */
-        .wrap {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            min-height: calc(100vh - 62px);
-        }
+        .user-detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .detail-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-dim), var(--border)); display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold-lt); border: 2px solid var(--gold-dim); flex-shrink: 0; }
+        .detail-info h2 { font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--gold-lt); }
+        .detail-info p { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+        .detail-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+        .btn-delete-user { margin-left: auto; background: linear-gradient(to bottom, var(--red-lt), var(--red)); border: 1px solid #6b1010; color: #fff; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; padding: 8px 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: opacity 0.2s; flex-shrink: 0; }
+        .btn-delete-user:hover { opacity: 0.85; }
 
-        /* sidebar */
-        .sidebar {
-            background: var(--panel);
-            border-right: 2px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
+        .section-title { font-family: 'Cinzel', serif; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+        .post-card { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--gold-dim); padding: 12px 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+        .post-body { flex: 1; min-width: 0; }
+        .post-content { font-size: 14px; color: var(--text); line-height: 1.5; word-break: break-word; margin-bottom: 6px; }
+        .post-img { max-width: 120px; max-height: 80px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+        .post-meta-row { font-size: 11px; color: var(--text-dim); font-family: 'Cinzel', serif; }
+        .btn-delete-post { background: none; border: 1px solid var(--red); color: var(--red-lt); font-family: 'Cinzel', serif; font-size: 10px; padding: 4px 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; align-self: center; transition: all 0.2s; }
+        .btn-delete-post:hover { background: var(--red); color: #fff; }
+        .no-posts { color: var(--text-dim); font-style: italic; font-size: 13px; padding: 20px 0; text-align: center; }
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .stat-box {
-            padding: 16px 12px;
-            text-align: center;
-            border-right: 1px solid var(--border);
-        }
-
-        .stat-box:last-child {
-            border-right: none;
-        }
-
-        .stat-num {
-            font-family: 'Cinzel', serif;
-            font-size: 1.8rem;
-            color: var(--gold-lt);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 10px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-
-        /* Search */
-        .search-wrap {
-            padding: 14px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .search-wrap form {
-            display: flex;
-            gap: 6px;
-        }
-
-        .search-wrap input {
-            flex: 1;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-family: 'Crimson Text', serif;
-            font-size: 14px;
-            padding: 6px 10px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .search-wrap input:focus {
-            border-color: var(--gold-dim);
-        }
-
-        .search-wrap input::placeholder {
-            color: var(--text-dim);
-            font-style: italic;
-        }
-
-        .btn-search {
-            background: linear-gradient(to bottom, var(--gold), var(--gold-dim));
-            border: none;
-            color: #1a0e00;
-            font-family: 'Cinzel', serif;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 6px 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-search:hover {
-            opacity: 0.85;
-        }
-
-        .sidebar-title {
-            padding: 10px 12px 6px;
-            font-family: 'Cinzel', serif;
-            font-size: 10px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        /* User list */
-        .user-list {
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .user-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 9px 12px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--text);
-            transition: background 0.15s;
-            position: relative;
-        }
-
-        .user-row:hover {
-            background: var(--panel2);
-        }
-
-        .user-row.active {
-            background: var(--panel2);
-            border-left: 3px solid var(--gold);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-dim), var(--border));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            color: var(--gold-lt);
-            flex-shrink: 0;
-            border: 1px solid var(--border);
-        }
-
-        .user-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .user-name {
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            color: var(--gold-lt);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-email {
-            font-size: 11px;
-            color: var(--text-dim);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .badge-admin {
-            font-size: 9px;
-            font-family: 'Cinzel', serif;
-            background: var(--gold-dim);
-            color: #1a0e00;
-            padding: 1px 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-
-        /* ── Main content ── */
-        .main {
-            background: var(--bg);
-            padding: 24px;
-            overflow-y: auto;
-        }
-
-        /* Alert banners */
-        .alert {
-            padding: 10px 14px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            border-left: 4px solid;
-        }
-
-        .alert-success {
-            background: #0d200d;
-            border-color: var(--green-lt);
-            color: #7fcf7f;
-        }
-
-        .alert-error {
-            background: #200d0d;
-            border-color: var(--red-lt);
-            color: #cf7f7f;
-        }
-
-        /* Welcome state */
-        .welcome {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-dim);
-        }
-
-        .welcome h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.4rem;
-            color: var(--gold-dim);
-            margin-bottom: 10px;
-        }
-
-        /* User detail panel */
-        .user-detail-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .detail-avatar {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-dim), var(--border));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Cinzel', serif;
-            font-size: 22px;
-            color: var(--gold-lt);
-            border: 2px solid var(--gold-dim);
-            flex-shrink: 0;
-        }
-
-        .detail-info h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.3rem;
-            color: var(--gold-lt);
-        }
-
-        .detail-info p {
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-top: 2px;
-        }
-
-        .detail-meta {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-top: 4px;
-        }
-
-        .btn-delete-user {
-            margin-left: auto;
-            background: linear-gradient(to bottom, var(--red-lt), var(--red));
-            border: 1px solid #6b1010;
-            color: #fff;
-            font-family: 'Cinzel', serif;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 8px 16px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: opacity 0.2s;
-            flex-shrink: 0;
-        }
-
-        .btn-delete-user:hover {
-            opacity: 0.85;
-        }
-
-        /* Posts section */
-        .section-title {
-            font-family: 'Cinzel', serif;
-            font-size: 11px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-        }
-
-        .post-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--gold-dim);
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .post-body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .post-content {
-            font-size: 14px;
-            color: var(--text);
-            line-height: 1.5;
-            word-break: break-word;
-            margin-bottom: 6px;
-        }
-
-        .post-img {
-            max-width: 120px;
-            max-height: 80px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .post-meta-row {
-            font-size: 11px;
-            color: var(--text-dim);
-            font-family: 'Cinzel', serif;
-        }
-
-        .btn-delete-post {
-            background: none;
-            border: 1px solid var(--red);
-            color: var(--red-lt);
-            font-family: 'Cinzel', serif;
-            font-size: 10px;
-            padding: 4px 10px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-            align-self: center;
-            transition: all 0.2s;
-        }
-
-        .btn-delete-post:hover {
-            background: var(--red);
-            color: #fff;
-        }
-
-        .no-posts {
-            color: var(--text-dim);
-            font-style: italic;
-            font-size: 13px;
-            padding: 20px 0;
-            text-align: center;
-        }
-
-        /* Search result count */
-        .result-count {
-            font-size: 11px;
-            color: var(--text-dim);
-            padding: 6px 12px;
-            border-bottom: 1px solid var(--border);
-            font-family: 'Cinzel', serif;
-            letter-spacing: 1px;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .wrap {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                border-right: none;
-                border-bottom: 2px solid var(--border);
-                max-height: 50vh;
-            }
+            .wrap { grid-template-columns: 1fr; }
+            .sidebar { border-right: none; border-bottom: 2px solid var(--border); max-height: 50vh; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Top Bar -->
     <div class="topbar">
         <img src="../img/gob.png" alt="TrollPost">
         <h1>⚔ Admin Sanctum</h1>
         <div class="topbar-links">
-            <a href="../index.php">← Back to Site</a>
-            <a href="logout.php">Log Out</a>
+            <a href="index.php"> Back to Site</a>
+            <a href="pages/logout.php">Log Out</a>
         </div>
     </div>
 
     <div class="wrap">
 
-        <!-- MacOS Sidebar, wait no its sidecar  -->
         <aside class="sidebar">
 
-            <!-- Stats -->
             <div class="stats-row">
                 <div class="stat-box">
                     <div class="stat-num"><?= $totalUsers ?></div>
@@ -599,9 +205,8 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                 </div>
             </div>
 
-            <!-- Search -->
             <div class="search-wrap">
-                <form method="GET" action="admin.php">
+                <form method="GET" action="pages/admin.php">
                     <input type="text" name="search" placeholder="Search username or email…"
                         value="<?= htmlspecialchars($search) ?>">
                     <button type="submit" class="btn-search">Scry</button>
@@ -610,7 +215,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                     <div style="margin-top:6px; font-size:11px; color:var(--text-dim);">
                         <?= count($users) ?> result(s) for
                         "<strong style="color:var(--gold-dim)"><?= htmlspecialchars($search) ?></strong>"
-                        — <a href="admin.php" style="color:var(--text-dim);">clear</a>
+                        — <a href="pages/admin.php" style="color:var(--text-dim);">clear</a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -619,18 +224,15 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                 <?= $search !== '' ? 'Search Results' : 'All Adventurers' ?>
             </div>
 
-            <!-- User List -->
             <div class="user-list">
                 <?php if (empty($users)): ?>
-                    <div style="padding:16px 12px; color:var(--text-dim); font-style:italic; font-size:13px;">
-                        No users found.
-                    </div>
+                    <div style="padding:16px 12px; color:var(--text-dim); font-style:italic; font-size:13px;">No users found.</div>
                 <?php else: ?>
                     <?php foreach ($users as $u): ?>
                         <?php
                         $isActive = ($viewUserId === (int) $u['id']);
-                        $initial = strtoupper(substr($u['username'], 0, 1));
-                        $href = 'admin.php?user=' . $u['id'] . ($search !== '' ? '&search=' . urlencode($search) : '');
+                        $initial  = strtoupper(substr($u['username'], 0, 1));
+                        $href     = 'pages/admin.php?user=' . $u['id'] . ($search !== '' ? '&search=' . urlencode($search) : '');
                         ?>
                         <a href="<?= $href ?>" class="user-row <?= $isActive ? 'active' : '' ?>">
                             <div class="user-avatar"><?= $initial ?></div>
@@ -648,7 +250,6 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
 
         </aside>
 
-        <!-- Main Panel -->
         <main class="main">
 
             <?php if ($success): ?>
@@ -660,21 +261,16 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
 
             <?php if ($viewedUser): ?>
 
-                <!-- User Detail -->
                 <div class="user-detail-header">
-                    <div class="detail-avatar">
-                        <?= strtoupper(substr($viewedUser['username'], 0, 1)) ?>
-                    </div>
+                    <div class="detail-avatar"><?= strtoupper(substr($viewedUser['username'], 0, 1)) ?></div>
                     <div class="detail-info">
                         <h2><?= htmlspecialchars($viewedUser['username']) ?></h2>
                         <p><?= htmlspecialchars($viewedUser['email']) ?></p>
-                        <p class="detail-meta">
-                            <?= count($viewedPosts) ?> post(s) &nbsp;·&nbsp; ID #<?= $viewedUser['id'] ?>
-                        </p>
+                        <p class="detail-meta"><?= count($viewedPosts) ?> post(s) &nbsp;·&nbsp; ID #<?= $viewedUser['id'] ?></p>
                     </div>
 
                     <?php if ($viewedUser['id'] != $_SESSION['user_id']): ?>
-                        <form method="POST" action="admin.php"
+                        <form method="POST" action="pages/admin.php"
                             onsubmit="return confirm('Delete <?= htmlspecialchars($viewedUser['username']) ?> and ALL their posts? This cannot be undone.')">
                             <input type="hidden" name="action" value="delete_user">
                             <input type="hidden" name="user_id" value="<?= $viewedUser['id'] ?>">
@@ -686,10 +282,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                     <?php endif; ?>
                 </div>
 
-                <!-- Posts -->
-                <div class="section-title">
-                    Posts by <?= htmlspecialchars($viewedUser['username']) ?>
-                </div>
+                <div class="section-title">Posts by <?= htmlspecialchars($viewedUser['username']) ?></div>
 
                 <?php if (empty($viewedPosts)): ?>
                     <div class="no-posts">This user has not posted anything yet.</div>
@@ -703,7 +296,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                                 <div class="post-content"><?= htmlspecialchars($p['content']) ?></div>
                                 <div class="post-meta-row"><?= $p['created_at'] ?> &nbsp;·&nbsp; #<?= $p['id'] ?></div>
                             </div>
-                            <form method="POST" action="admin.php" onsubmit="return confirm('Delete this post?')">
+                            <form method="POST" action="pages/admin.php" onsubmit="return confirm('Delete this post?')">
                                 <input type="hidden" name="action" value="delete_post">
                                 <input type="hidden" name="post_id" value="<?= $p['id'] ?>">
                                 <input type="hidden" name="user_id_return" value="<?= $viewedUser['id'] ?>">
@@ -717,18 +310,14 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                 <?php endif; ?>
 
             <?php else: ?>
-
-                <!-- Default welcome state -->
                 <div class="welcome">
                     <h2>Select a User</h2>
                     <p>Choose an adventurer from the left to inspect their posts and account.</p>
                 </div>
-
             <?php endif; ?>
 
         </main>
     </div>
 
 </body>
-
 </html>

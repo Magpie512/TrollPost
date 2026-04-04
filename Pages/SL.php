@@ -1,23 +1,21 @@
 <?php
 require '../includes/connect.php';
+require '../includes/sanitize.php';
 
 // ------------------
-// RECAPTCHA CONFIG | I know im posting open secrets. idgaf
+// RECAPTCHA CONFIG
 // ------------------
 define('RECAPTCHA_SITE_KEY', '6LfvrqYsAAAAAJRx9QbNuO9ki591owa55L5n5e_S');
 define('RECAPTCHA_SECRET_KEY', '6LfvrqYsAAAAACjCCDaFI_5limu6KRxlQRK609JE');
 
 function verifyCaptcha(): bool
 {
-    // Bypass reCAPTCHA on localhost for development
     $host = $_SERVER['HTTP_HOST'] ?? '';
     if ($host === 'localhost' || $host === '127.0.0.1') {
         return true;
     }
-
     $token = $_POST['g-recaptcha-response'] ?? '';
-    if (empty($token))
-        return false;
+    if (empty($token)) return false;
 
     $response = file_get_contents(
         'https://www.google.com/recaptcha/api/siteverify?secret='
@@ -27,9 +25,8 @@ function verifyCaptcha(): bool
     return $data['success'] ?? false;
 }
 
-
-$loginError = "";
-$registerError = "";
+$loginError     = "";
+$registerError  = "";
 $registerSuccess = "";
 
 // --- SIGN IN ---
@@ -38,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (!verifyCaptcha()) {
         $loginError = "Please complete the CAPTCHA.";
     } else {
-        $usernameOrEmail = trim($_POST['username_or_email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $usernameOrEmail = sanitizeText($_POST['username_or_email'] ?? '', 254);
+        $password        = $_POST['password'] ?? ''; // never sanitize passwords
 
         if ($usernameOrEmail === '' || $password === '') {
             $loginError = "All fields are required.";
@@ -53,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
-                $_SESSION['isadmin'] = $user['isadmin'];
+                $_SESSION['isadmin']  = $user['isadmin'];
 
-                header("Location: ../index.php");
-
+                // Everyone goes to index — admins can navigate to admin panel from there
+                header("Location: /~Mars200561234/TrollPost/index.php");
                 exit;
             } else {
                 $loginError = "Invalid credentials. Please try again.";
@@ -71,14 +68,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (!verifyCaptcha()) {
         $registerError = "Please complete the CAPTCHA.";
     } else {
-        $username = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $username = sanitizeUsername($_POST['username'] ?? '');
+        $email    = sanitizeEmail($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? ''; // never sanitize passwords
 
         if ($username === '' || $email === '' || $password === '') {
             $registerError = "All fields are required.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $registerError = "Invalid email address.";
+            if ($username === '' && !empty($_POST['username'])) {
+                $registerError = "Username may only contain letters, numbers, underscores, and hyphens (3–50 chars).";
+            } elseif ($email === '' && !empty($_POST['email'])) {
+                $registerError = "Invalid email address.";
+            }
         } elseif (strlen($password) < 8) {
             $registerError = "Password must be at least 8 characters.";
         } else {
@@ -92,14 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
                 $stmt->execute([$username, $email, $hashed]);
 
-                // Auto login the new user and redirect to feed
+                // Auto-login and redirect to feed
                 $stmt = $pdo->prepare("SELECT id, username, isadmin FROM users WHERE email = ?");
                 $stmt->execute([$email]);
                 $newUser = $stmt->fetch(PDO::FETCH_ASSOC);
                 session_regenerate_id(true);
-                $_SESSION['user_id'] = $newUser['id'];
+                $_SESSION['user_id']  = $newUser['id'];
                 $_SESSION['username'] = $newUser['username'];
-                $_SESSION['isadmin'] = $newUser['isadmin'];
+                $_SESSION['isadmin']  = $newUser['isadmin'];
                 header("Location: /~Mars200561234/TrollPost/index.php");
                 exit;
             }
@@ -124,12 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
-    <!-- Google reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <link rel="icon" type="image/png" href="../img/gob.png">
     <link rel="stylesheet" href="../styles/SL.css?v=1.9">
     <style>
-        /* makes recaptcha fit inside the form panels */
         .g-recaptcha {
             transform: scale(0.85);
             transform-origin: 0 0;
@@ -151,8 +149,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             text-decoration: none;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-top: 12px;
-            /* fixed it. fuck this button bro */
             position: absolute;
             top: 20px;
             left: 10px;
@@ -175,13 +171,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <body>
     <main>
-        <a href="../index.php" class="back-btn">Back to TrollPost</a>
+        <a href="/~Mars200561234/TrollPost/index.php" class="back-btn">Back to TrollPost</a>
 
         <div class="container" id="container">
 
             <!-- Sign Up Form -->
             <div class="form-container sign-up-container">
-                <form method="POST" action="SL.php">
+                <form method="POST" action="pages/SL.php">
                     <input type="hidden" name="action" value="register">
                     <h1>Create Account</h1>
 
@@ -207,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             <!-- Sign In Form -->
             <div class="form-container sign-in-container">
-                <form method="POST" action="SL.php">
+                <form method="POST" action="pages/SL.php">
                     <input type="hidden" name="action" value="login">
                     <h1>Sign in</h1>
 

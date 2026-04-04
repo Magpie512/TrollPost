@@ -21,8 +21,7 @@ require_once 'includes/header.php';
                 <button class="fancy-button" onclick="window.location.href='pages/profile.php'">My Profile</button>
                 <button class="fancy-button" onclick="window.location.href='includes/logout.php'">Log Out</button>
             <?php else: ?>
-                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign
-                    up</button>
+                <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign up</button>
             <?php endif; ?>
         </header>
 
@@ -44,12 +43,15 @@ require_once 'includes/header.php';
                         <input type="submit" value="Submit Post" style="margin-top:8px;">
                     </form>
                 <?php else: ?>
-                    <p>You must be <a href="Trollpost/Pages/SL.php">logged in</a> to post.</p>
+                    <p>You must be <a href="pages/SL.php">logged in</a> to post.</p>
                 <?php endif; ?>
             </div>
 
             <div id="FeedContainer">
                 <h2>Recent Posts</h2>
+                <div id="noResults" style="display:none; color:#8b6914; font-style:italic; font-size:11px; padding:6px 0;">
+                    No posts found matching your scry.
+                </div>
                 <?php
                 $limit = 10;
                 $stmt = $pdo->prepare("SELECT posts.id, posts.user_id, posts.content, posts.image_path, posts.created_at, users.username 
@@ -63,11 +65,11 @@ require_once 'includes/header.php';
                     <div class="PostCard" id="post-<?php echo $post['id']; ?>">
                         <div class="post-header">
                             <span class="post-meta">
-                                Posted by <strong><?php echo htmlspecialchars($post['username']); ?></strong>
+                                Posted by <strong class="post-author"><?php echo htmlspecialchars($post['username']); ?></strong>
                                 · <?php echo $post['created_at']; ?>
                             </span>
                         </div>
-                    
+
                         <div id="display-<?php echo $post['id']; ?>">
                             <p class="content-text"><?php echo htmlspecialchars($post['content']); ?></p>
                             <?php if (!empty($post['image_path'])): ?>

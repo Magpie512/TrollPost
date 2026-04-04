@@ -2,9 +2,5 @@
 session_start();
 session_unset();
 session_destroy();
-header("Location: ../index.php");
+header("Location: /~Mars200561234/TrollPost/index.php");
 exit;
-
-// upon logout unset delete and throw user to the feed
-
-?>
