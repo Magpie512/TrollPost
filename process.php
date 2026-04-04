@@ -76,16 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Remove
+        // Remove (Updated logic removes image from the uploads folder.)
         elseif ($action === 'delete' && $id) {
             // 1. Fetch info first
-            $stmt = $pdo->prepare("SELECT image_path FROM posts WHERE id = ? AND user_id = ?");
+            $stmt = $pdo->prepare("SELECT image_path FROM posts WHERE id = ?");
             $stmt->execute([$id, $_SESSION['user_id']]);
             $post = $stmt->fetch();
 
             if ($post) {
                 // 2. Delete from Database FIRST
-                $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ? AND user_id = ?");
+                $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
                 $stmt->execute([$id, $_SESSION['user_id']]);
 
                 // 3. ONLY delete file if DB deletion succeeded

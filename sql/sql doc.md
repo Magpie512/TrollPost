@@ -1,4 +1,6 @@
-# 📘 Database Schema Logic Overview
+I made this with the assistance of AI only this doc!!! But its irrelevant anyway. When i was mapping out the old sql it was overwhelming me so i thought translating my notes to a MD and having AI proffesionalize it didnt help hence the back pedal.
+
+# Database Schema Logic Overview
 
 This document provides a clear, structured explanation of the relational design behind the SQL schema. It outlines how each table contributes to a scalable, maintainable social‑style content platform.
 
