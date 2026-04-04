@@ -44,7 +44,7 @@ require_once 'includes/header.php';
                         <input type="submit" value="Submit Post" style="margin-top:8px;">
                     </form>
                 <?php else: ?>
-                    <p>You must be <a href="Pages/SL.php">logged in</a> to post.</p>
+                    <p>You must be <a href="Trollpost/Pages/SL.php">logged in</a> to post.</p>
                 <?php endif; ?>
             </div>
 
