@@ -7,13 +7,13 @@ header("Expires: 0");
 
 // Not logged in - send to login page
 if (empty($_SESSION["user_id"])) {
-    header("Location: SL.php");
+    header("Location: pages/SL.php");
     exit();
 }
 
 // Logged in as admin - send to admin panel
 if ($_SESSION["isadmin"] == 1) {
-    header("Location: admin.php");
+    header("Location: pages/admin.php");
     exit();
 }
 

@@ -5,12 +5,12 @@ require '../includes/sanitize.php';
 
 // Must be logged in AND be an admin
 if ($_SESSION['isadmin'] != 1) {
-    header("Location: /~Mars200561234/TrollPost/index.php");
+    header("Location: ../index.php");
     exit;
 }
 
 $success = "";
-$error = "";
+$error   = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $qs = isset($_POST['search']) ? '?search=' . urlencode($_POST['search']) : '';
-    header("Location: pages/admin.php" . $qs);
+    header("Location: admin.php" . $qs);
     exit;
 }
 
@@ -119,7 +119,6 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
         .topbar-links a:hover { color: var(--gold-lt); border-color: var(--gold-dim); }
 
         .wrap { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 62px); }
-
         .sidebar { background: var(--panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; }
         .stats-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
         .stat-box { padding: 16px 12px; text-align: center; border-right: 1px solid var(--border); }
@@ -185,8 +184,8 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
         <img src="../img/gob.png" alt="TrollPost">
         <h1>⚔ Admin Sanctum</h1>
         <div class="topbar-links">
-            <a href="index.php"> Back to Site</a>
-            <a href="pages/logout.php">Log Out</a>
+            <a href="../index.php">← Back to Site</a>
+            <a href="logout.php">Log Out</a>
         </div>
     </div>
 
@@ -206,7 +205,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
             </div>
 
             <div class="search-wrap">
-                <form method="GET" action="pages/admin.php">
+                <form method="GET" action="admin.php">
                     <input type="text" name="search" placeholder="Search username or email…"
                         value="<?= htmlspecialchars($search) ?>">
                     <button type="submit" class="btn-search">Scry</button>
@@ -215,7 +214,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                     <div style="margin-top:6px; font-size:11px; color:var(--text-dim);">
                         <?= count($users) ?> result(s) for
                         "<strong style="color:var(--gold-dim)"><?= htmlspecialchars($search) ?></strong>"
-                        — <a href="pages/admin.php" style="color:var(--text-dim);">clear</a>
+                        — <a href="admin.php" style="color:var(--text-dim);">clear</a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -232,7 +231,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                         <?php
                         $isActive = ($viewUserId === (int) $u['id']);
                         $initial  = strtoupper(substr($u['username'], 0, 1));
-                        $href     = 'pages/admin.php?user=' . $u['id'] . ($search !== '' ? '&search=' . urlencode($search) : '');
+                        $href     = 'admin.php?user=' . $u['id'] . ($search !== '' ? '&search=' . urlencode($search) : '');
                         ?>
                         <a href="<?= $href ?>" class="user-row <?= $isActive ? 'active' : '' ?>">
                             <div class="user-avatar"><?= $initial ?></div>
@@ -270,7 +269,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                     </div>
 
                     <?php if ($viewedUser['id'] != $_SESSION['user_id']): ?>
-                        <form method="POST" action="pages/admin.php"
+                        <form method="POST" action="admin.php"
                             onsubmit="return confirm('Delete <?= htmlspecialchars($viewedUser['username']) ?> and ALL their posts? This cannot be undone.')">
                             <input type="hidden" name="action" value="delete_user">
                             <input type="hidden" name="user_id" value="<?= $viewedUser['id'] ?>">
@@ -296,7 +295,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
                                 <div class="post-content"><?= htmlspecialchars($p['content']) ?></div>
                                 <div class="post-meta-row"><?= $p['created_at'] ?> &nbsp;·&nbsp; #<?= $p['id'] ?></div>
                             </div>
-                            <form method="POST" action="pages/admin.php" onsubmit="return confirm('Delete this post?')">
+                            <form method="POST" action="admin.php" onsubmit="return confirm('Delete this post?')">
                                 <input type="hidden" name="action" value="delete_post">
                                 <input type="hidden" name="post_id" value="<?= $p['id'] ?>">
                                 <input type="hidden" name="user_id_return" value="<?= $viewedUser['id'] ?>">

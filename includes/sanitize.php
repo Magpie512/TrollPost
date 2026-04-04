@@ -1,6 +1,6 @@
 <?php
 /**
- * TrollPost – Input Sanit Helpers
+ * TrollPost – Input Sanitization Helpers
  */
 
 function sanitizeText(string $value, int $maxLength = 255): string

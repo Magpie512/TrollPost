@@ -19,6 +19,9 @@ require_once 'includes/header.php';
                     Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!
                 </span>
                 <button class="fancy-button" onclick="window.location.href='pages/profile.php'">My Profile</button>
+                <?php if ($_SESSION['isadmin'] == 1): ?>
+                    <button class="fancy-button" onclick="window.location.href='pages/admin.php'">⚔ Admin</button>
+                <?php endif; ?>
                 <button class="fancy-button" onclick="window.location.href='includes/logout.php'">Log Out</button>
             <?php else: ?>
                 <button id="signin" class="btn btn-primary" onclick="window.location.href='pages/SL.php'">Log in or Sign up</button>

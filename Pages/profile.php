@@ -4,7 +4,7 @@ require '../includes/connect.php';
 require '../includes/sanitize.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: pages/SL.php");
+    header("Location: SL.php");
     exit;
 }
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action']) && $_POST['action'] === 'update') {
         $newUsername = sanitizeUsername($_POST['username'] ?? '');
         $newEmail    = sanitizeEmail($_POST['email'] ?? '');
-        $newPassword = $_POST['new_password'] ?? '';   // never sanitize passwords. it needs to be hashed
+        $newPassword = $_POST['new_password'] ?? '';   // never sanitize passwords
         $currentPw   = $_POST['current_password'] ?? '';
 
         $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$userId]);
             session_unset();
             session_destroy();
-            header("Location: /~Mars200561234/TrollPost/index.php");
+            header("Location: ../index.php");
             exit;
         }
     }
@@ -127,7 +127,7 @@ $currentUser = $stmt->fetch();
 <body>
     <main style="padding: 16px;">
 
-        <a href="/~Mars200561234/TrollPost/index.php" class="back-btn">Back to TrollPost</a>
+        <a href="../index.php" class="back-btn">Back to TrollPost</a>
 
         <div class="profile-wrap">
             <h2>My Profile</h2>
@@ -139,7 +139,7 @@ $currentUser = $stmt->fetch();
                 <p style="color:red; font-size:11px; margin:0 0 10px;"><?= htmlspecialchars($error) ?></p>
             <?php endif; ?>
 
-            <form method="POST" action="pages/profile.php">
+            <form method="POST" action="profile.php">
                 <input type="hidden" name="action" value="update">
 
                 <label>Username</label>
@@ -162,7 +162,7 @@ $currentUser = $stmt->fetch();
                 <p style="font-size:11px; color:#8b0000; margin:0 0 8px;">
                     Deleting your account is permanent. All your posts will be removed too.
                 </p>
-                    <form method="POST" action="pages/profile.php"
+                <form method="POST" action="profile.php"
                     onsubmit="return confirm('Are you absolutely sure? This cannot be undone.');">
                     <input type="hidden" name="action" value="delete_account">
                     <label>Confirm Passphrase</label>

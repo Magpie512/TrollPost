@@ -18,15 +18,15 @@ function verifyCaptcha(): bool
     if (empty($token)) return false;
 
     $response = file_get_contents(
-        'https://www.google.com/recaptcha/api/siteverify?secret='
+        'https://www.google.com/recaptcha/api.siteverify?secret='
         . RECAPTCHA_SECRET_KEY . '&response=' . urlencode($token)
     );
     $data = json_decode($response, true);
     return $data['success'] ?? false;
 }
 
-$loginError     = "";
-$registerError  = "";
+$loginError      = "";
+$registerError   = "";
 $registerSuccess = "";
 
 // --- SIGN IN ---
@@ -45,15 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt->bindParam(':login', $usernameOrEmail);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-             // Check if the user exists
+
             if ($user && password_verify($password, $user['password'])) {
                 session_regenerate_id(true);
-                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_id']  = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['isadmin']  = $user['isadmin'];
 
-                // Everyone goes to index — admins can navigate to admin panel from there
-                header("Location: /~Mars200561234/TrollPost/index.php");
+                header("Location: ../index.php");
                 exit;
             } else {
                 $loginError = "Invalid credentials. Please try again.";
@@ -171,13 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <body>
     <main>
-        <a href="/~Mars200561234/TrollPost/index.php" class="back-btn">Back to TrollPost</a>
+        <a href="../index.php" class="back-btn">Back to TrollPost</a>
 
         <div class="container" id="container">
 
             <!-- Sign Up Form -->
             <div class="form-container sign-up-container">
-                <form method="POST" action="pages/SL.php">
+                <form method="POST" action="SL.php">
                     <input type="hidden" name="action" value="register">
                     <h1>Create Account</h1>
 
@@ -203,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             <!-- Sign In Form -->
             <div class="form-container sign-in-container">
-                <form method="POST" action="pages/SL.php">
+                <form method="POST" action="SL.php">
                     <input type="hidden" name="action" value="login">
                     <h1>Sign in</h1>
 

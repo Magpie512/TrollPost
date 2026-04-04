@@ -85,6 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("A database error occurred. Please try again later.");
     }
 
-    header("Location: /~Mars200561234/TrollPost/index.php");
+    header("Location: index.php");
     exit;
 }
