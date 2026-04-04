@@ -18,7 +18,7 @@ function verifyCaptcha(): bool
     if (empty($token)) return false;
 
     $response = file_get_contents(
-        'https://www.google.com/recaptcha/api.siteverify?secret='
+        'https://www.google.com/recaptcha/api/siteverify?secret='
         . RECAPTCHA_SECRET_KEY . '&response=' . urlencode($token)
     );
     $data = json_decode($response, true);
