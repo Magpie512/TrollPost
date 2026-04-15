@@ -831,38 +831,6 @@ exit;
 
 ---
 
-## Common Exam Questions
-
-### Q: What's the difference between `include` and `require`?
-**A**: `require` causes fatal error if file not found, `include` only produces warning
-
-### Q: What's the difference between `==` and `===`?
-**A**: `==` compares values (type coercion), `===` compares values AND types
-
-### Q: What does PDO stand for?
-**A**: PHP Data Objects - database abstraction layer
-
-### Q: Why use prepared statements?
-**A**: Prevent SQL injection by separating SQL code from data
-
-### Q: What's the purpose of `htmlspecialchars()`?
-**A**: Convert special characters to HTML entities to prevent XSS attacks
-
-### Q: What's the difference between `$_POST` and `$_GET`?
-**A**: 
-- `$_POST` - Data sent in HTTP body (not visible in URL)
-- `$_GET` - Data sent in URL query string (visible)
-
-### Q: What does `??` operator do?
-**A**: Null coalescing - returns first value if set, otherwise second value
-
-### Q: What's the difference between `empty()` and `isset()`?
-**A**: 
-- `isset()` - Checks if variable exists and is not NULL
-- `empty()` - Checks if variable is "empty" (0, "", NULL, FALSE, etc.)
-
----
-
 ## Quick Reference Card
 
 ### Session
@@ -914,17 +882,5 @@ header("Location: page.php")
 header("Cache-Control: no-cache")
 exit
 ```
-
----
-
-## Study Tips for YOU
-
-1. **Understand the flow**: Trace how data moves from form → PHP → database → output
-2. **Know security**: Be able to explain SQL injection, XSS, and their prevention
-3. **Practice syntax**: Write code by hand to memorize function signatures
-4. **Understand PDO**: Know the difference between `prepare()`, `execute()`, `fetch()`, `fetchAll()`
-5. **Know superglobals**: `$_POST`, `$_GET`, `$_SESSION`, `$_FILES`, `$_SERVER`
-6. **File uploads**: Understand the complete flow from form to filesystem
-7. **Alternative syntax**: Know `:`, `endif`, `endwhile`, `endforeach` for templates
 
 ---
