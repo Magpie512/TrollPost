@@ -44,7 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Create
         if ($action === 'create' && !empty($content)) {
             $imagePath = handleImageUpload();
-            
+
+            // post sub comment. I did use AI here to help me refactor after my table shrink from 7 to 2.
+            // Also of Note: I did ask it to add instructional walkthrough for both me at the time getting overwhelmed the next day
+            // and for open book prep.
             // Note: Added 'name' to match your SQL schema (NOT NULL)
             $stmt = $pdo->prepare("INSERT INTO posts (user_id, name, content, image_path) VALUES (?, ?, ?, ?)");
             $stmt->execute([$_SESSION['user_id'], 'New Post', $content, $imagePath]);
