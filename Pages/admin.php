@@ -575,7 +575,7 @@ $totalPosts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
     <!-- Top Bar -->
     <div class="topbar">
         <img src="../img/gob.png" alt="TrollPost">
-        <h1>⚔ Admin Sanctum</h1>
+        <h1>⚔ Admin Sanctum</h1> 
         <div class="topbar-links">
             <a href="../index.php">← Back to Site</a>
             <a href="logout.php">Log Out</a>
