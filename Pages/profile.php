@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $error = "New passphrase must be at least 8 characters.";
                     } 
                     /* didnt realised i forgot proper unique passwords
+                    preg_match is just for regex 
                     elseif (preg_match('/[A-Z]/', $newPassword) < 1) {
                         $error = "New passphrase must contain at least one uppercase letter.";
                     } 
