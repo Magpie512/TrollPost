@@ -26,31 +26,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
+        // Check if current password is correct
         if (!$user || !password_verify($currentPw, $user['password'])) {
             $error = "Current passphrase is incorrect.";
-        } elseif (empty($newUsername) || empty($newEmail)) {
+        } 
+        
+        // Check if username or email is empty
+        elseif (empty($newUsername) || empty($newEmail)) {
             $error = "Username and email cannot be empty.";
-        } elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+        } 
+        
+        // Check if username or email is valid
+        elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email address.";
-        } else {
+        } 
+        
+        else {
             $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
             $stmt->execute([$newUsername, $newEmail, $userId]);
+            
+            // if stmt fetches then username or email is already taken
             if ($stmt->fetch()) {
                 $error = "That username or email is already taken.";
-            } else {
-                if (!empty($newPassword)) {
-                    if (strlen($newPassword) < 8) {
+            } 
+            
+            else {
+            
+            if (!empty($newPassword)) {
+                // Check if new password is at least 8 characters
+                if (strlen($newPassword) < 8) {
                         $error = "New passphrase must be at least 8 characters.";
-                    } else {
+                    } 
+                    /* didnt realised i forgot proper unique passwords
+                    elseif (preg_match('/[A-Z]/', $newPassword) < 1) {
+                        $error = "New passphrase must contain at least one uppercase letter.";
+                    } 
+                    elseif (preg_match('/[a-z]/', $newPassword) < 1) {
+                        $error = "New passphrase must contain at least one lowercase letter.";
+                    } 
+                    elseif (preg_match('/[0-9]/', $newPassword) < 1) {
+                        $error = "New passphrase must contain at least one number.";
+                    }
+                    This is for me later <3 */
+
+                    // Hash new password
+                    else {
                         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
                         $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
                         $stmt->execute([$newUsername, $newEmail, $hashed, $userId]);
                     }
-                } else {
+                } 
+
+                // Just update username and email
+                else {
                     $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                     $stmt->execute([$newUsername, $newEmail, $userId]);
                 }
 
+                // Check if update was successful
                 if (empty($error)) {
                     $_SESSION['username'] = $newUsername;
                     $success = "Profile updated successfully!";

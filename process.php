@@ -12,6 +12,7 @@ $action  = $_POST['action'] ?? '';
 $id      = $_POST['id'] ?? null;
 $content = trim($_POST['content'] ?? '');
 
+// Handle image upload
 function handleImageUpload(): ?string {
     if (empty($_FILES['post_image']['name']) || $_FILES['post_image']['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
@@ -24,12 +25,14 @@ function handleImageUpload(): ?string {
     $file = $_FILES['post_image'];
     if (!file_exists($file['tmp_name'])) return null;
 
+    // Ensure file is valid with mimeType und size
     $mimeType = mime_content_type($file['tmp_name']);
     if (!in_array($mimeType, $allowed)) die("Invalid file type.");
     if ($file['size'] > $maxSize) die("File too large.");
 
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
+    // Generate unique filename by converting to hexidecimal string)
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     $filename = $uploadDir . bin2hex(random_bytes(8)) . '.' . $ext;
 
@@ -38,17 +41,13 @@ function handleImageUpload(): ?string {
     return $filename;
 }
 
-// 2. Action Processing
+// POST processing  
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Create
         if ($action === 'create' && !empty($content)) {
             $imagePath = handleImageUpload();
-
-            // post sub comment. I did use AI here to help me refactor after my table shrink from 7 to 2.
-            // Also of Note: I did ask it to add instructional walkthrough for both me at the time getting overwhelmed the next day
-            // and for open book prep.
-            // Note: Added 'name' to match your SQL schema (NOT NULL)
+            // Insert content into DB
             $stmt = $pdo->prepare("INSERT INTO posts (user_id, name, content, image_path) VALUES (?, ?, ?, ?)");
             $stmt->execute([$_SESSION['user_id'], 'New Post', $content, $imagePath]);
         }
@@ -59,16 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newImagePath = handleImageUpload();
             
             if ($newImagePath) {
-                // 1. Get old image path to delete it
+                // Get temp path to delete it
                 $stmt = $pdo->prepare("SELECT image_path FROM posts WHERE id = ? AND user_id = ?");
                 $stmt->execute([$id, $_SESSION['user_id']]);
                 $oldPost = $stmt->fetch();
 
-                // 2. Update with new image
+                // Update with new image
                 $stmt = $pdo->prepare("UPDATE posts SET content = ?, image_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?");
                 $stmt->execute([$content, $newImagePath, $id, $_SESSION['user_id']]);
 
-                // 3. Delete old file from server if update was successful
+                // Delete old file from server if update was successful
                 if ($oldPost && !empty($oldPost['image_path']) && file_exists($oldPost['image_path'])) {
                     unlink($oldPost['image_path']);
                 }
@@ -86,21 +85,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id, $_SESSION['user_id']]);
             $post = $stmt->fetch();
 
+            // If post exists then delete DB and then delete file on prod
             if ($post) {
-                // 2. Delete from Database FIRST
                 $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
                 $stmt->execute([$id, $_SESSION['user_id']]);
 
-                // 3. ONLY delete file if DB deletion succeeded
                 if (!empty($post['image_path']) && file_exists($post['image_path'])) {
                     unlink($post['image_path']);
                 }
             }
         }
-
-    } catch (PDOException $e) {
-        // If the DB crashes/errors, we catch it here so the script doesn't just "die"
-        // and leave files in an inconsistent state.
+    } 
+    // Any errors will be caught here
+    catch (PDOException $e) {
         error_log("Database Error: " . $e->getMessage());
         die("A database error occurred. Please try again later.");
     }
